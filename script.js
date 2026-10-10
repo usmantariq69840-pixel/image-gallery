@@ -1,386 +1,373 @@
 
-const photos = [
-    {
-        title: "Mountain Lake",
-        category: "Nature",
-        description: "A quiet moment between mountains and sky.",
-        location: "Swiss Alps",
-        image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1400&q=90",
-        thumb: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=750&q=85"
-    },
-    {
-        title: "City at Golden Hour",
-        category: "Cities",
-        description: "The skyline glows as day gives way to night.",
-        location: "Dubai, UAE",
-        image: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1400&q=90",
-        thumb: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=750&q=85"
-    },
-    {
-        title: "King of the Wild",
-        category: "Animals",
-        description: "A calm gaze from the heart of the wild.",
-        location: "Wildlife",
-        image: "https://images.unsplash.com/photo-1546182990-dffeafbe841d?auto=format&fit=crop&w=1400&q=90",
-        thumb: "https://images.unsplash.com/photo-1546182990-dffeafbe841d?auto=format&fit=crop&w=750&q=85"
-    },
-    {
-        title: "City Lights",
-        category: "Cities",
-        description: "Reflections and lights after sunset.",
-        location: "Night scenes",
-        image: "https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1400&q=90",
-        thumb: "https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=750&q=85"
-    },
-    {
-        title: "Into the Woods",
-        category: "Nature",
-        description: "Sunlight finds its way through the forest.",
-        location: "Forest trail",
-        image: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1400&q=90",
-        thumb: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=750&q=85"
-    },
-    {
-        title: "A Flash of Blue",
-        category: "Animals",
-        description: "A burst of color in a green world.",
-        location: "Birdlife",
-        image: "https://images.unsplash.com/photo-1552728089-57bdde30beb3?auto=format&fit=crop&w=1400&q=90",
-        thumb: "https://images.unsplash.com/photo-1552728089-57bdde30beb3?auto=format&fit=crop&w=750&q=85"
-    },
-    {
-        title: "Creative Workspace",
-        category: "Technology",
-        description: "Tools, ideas, and a little room to create.",
-        location: "Desk setup",
-        image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1400&q=90",
-        thumb: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=750&q=85"
-    },
-    {
-        title: "The Long Way Up",
-        category: "People",
-        description: "Sometimes the journey is the destination.",
-        location: "Mountain escape",
-        image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1400&q=90",
-        thumb: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=750&q=85"
+const expressionDisplay = document.getElementById("expression");
+const resultDisplay = document.getElementById("result");
+const displayLabel = document.getElementById("displayLabel");
+const keypad = document.querySelector(".keypad");
+
+let currentInput = "0";
+let storedValue = null;
+let operator = null;
+let waitingForOperand = false;
+let justCalculated = false;
+let errorState = false;
+
+function formatNumber(number) {
+    if (!Number.isFinite(number)) {
+        return "Error";
     }
-];
 
-// Select HTML elements
-const grid = document.getElementById("galleryGrid");
-const searchInput = document.getElementById("searchInput");
-const resultCount = document.getElementById("resultCount");
-const emptyState = document.getElementById("emptyState");
-const lightbox = document.getElementById("lightbox");
+    // Avoid floating-point results such as 0.30000000000000004
+    const rounded = Number(number.toPrecision(12));
 
-// Store current gallery state
-let activeCategory = "All";
-let visiblePhotos = [...photos];
-let currentIndex = 0;
-
-const favorites = new Set();
-
-
-// DISPLAY GALLERY
-function renderGallery() {
-
-    const query = searchInput.value.trim().toLowerCase();
-
-    // Filter by category and search text
-    visiblePhotos = photos.filter(photo => {
-
-        const matchesCategory =
-            activeCategory === "All" ||
-            photo.category === activeCategory;
-
-        const matchesSearch = [
-            photo.title,
-            photo.category,
-            photo.description,
-            photo.location
-        ].some(value => value.toLowerCase().includes(query));
-
-        return matchesCategory && matchesSearch;
+    return rounded.toLocaleString("en-US", {
+        useGrouping: false,
+        maximumFractionDigits: 10
     });
-
-    // Create image cards
-    grid.innerHTML = visiblePhotos.map((photo, index) => `
-        <article class="photo-card"
-            tabindex="0"
-            role="button"
-            aria-label="Open ${photo.title}"
-            data-index="${index}"
-            style="animation-delay:${Math.min(index * 45, 300)}ms">
-
-            <img src="${photo.thumb}"
-                alt="${photo.title}"
-                loading="lazy">
-
-            <div class="photo-info">
-
-                <div>
-                    <h3>${photo.title}</h3>
-                    <p>${photo.location}</p>
-                </div>
-
-                <div class="category-pill">
-                    ${photo.category}
-                </div>
-
-                <span class="open-icon" aria-hidden="true">
-                    ↗
-                </span>
-
-            </div>
-        </article>
-    `).join("");
-
-    // Update result count
-    resultCount.textContent =
-        `${String(visiblePhotos.length).padStart(2, "0")} photo${visiblePhotos.length === 1 ? "" : "s"}`;
-
-    // Show empty message when no photos match
-    emptyState.hidden = visiblePhotos.length !== 0;
-    grid.hidden = visiblePhotos.length === 0;
 }
 
+function calculate(a, b, op) {
+    switch (op) {
+        case "+":
+            return a + b;
 
-// OPEN LIGHTBOX
-function openLightbox(index) {
+        case "-":
+            return a - b;
 
-    if (!visiblePhotos.length) return;
+        case "*":
+            return a * b;
 
-    currentIndex =
-        (index + visiblePhotos.length) % visiblePhotos.length;
+        case "/":
+            if (b === 0) {
+                return null;
+            }
+            return a / b;
 
-    updateLightbox();
-
-    lightbox.classList.add("open");
-    lightbox.setAttribute("aria-hidden", "false");
-
-    document.body.classList.add("no-scroll");
-
-    document.getElementById("closeLightbox").focus();
-}
-
-
-// UPDATE LIGHTBOX CONTENT
-function updateLightbox() {
-
-    const photo = visiblePhotos[currentIndex];
-
-    if (!photo) return;
-
-    const img = document.getElementById("lightboxImage");
-
-    img.style.opacity = "0.25";
-    img.src = photo.image;
-    img.alt = photo.title;
-
-    img.onload = () => {
-        img.style.opacity = "1";
-    };
-
-    document.getElementById("lightboxCategory").textContent =
-        photo.category;
-
-    document.getElementById("lightboxCounter").textContent =
-        `${String(currentIndex + 1).padStart(2, "0")} / ${String(visiblePhotos.length).padStart(2, "0")}`;
-
-    document.getElementById("lightboxTitle").textContent =
-        photo.title;
-
-    document.getElementById("lightboxDescription").textContent =
-        photo.description;
-
-    // Update favorite button
-    const favoriteBtn = document.getElementById("favoriteBtn");
-
-    favoriteBtn.classList.toggle(
-        "liked",
-        favorites.has(photo.title)
-    );
-
-    favoriteBtn.textContent =
-        favorites.has(photo.title) ? "♥" : "♡";
-}
-
-
-// CLOSE LIGHTBOX
-function closeLightbox() {
-
-    lightbox.classList.remove("open");
-    lightbox.setAttribute("aria-hidden", "true");
-
-    document.body.classList.remove("no-scroll");
-}
-
-
-// NEXT / PREVIOUS IMAGE
-function moveLightbox(direction) {
-
-    if (!visiblePhotos.length) return;
-
-    currentIndex =
-        (currentIndex + direction + visiblePhotos.length)
-        % visiblePhotos.length;
-
-    updateLightbox();
-}
-
-
-// CATEGORY FILTERS
-document.getElementById("filters").addEventListener("click", event => {
-
-    const button = event.target.closest(".filter-btn");
-
-    if (!button) return;
-
-    activeCategory = button.dataset.category;
-
-    document.querySelectorAll(".filter-btn").forEach(btn => {
-        btn.classList.toggle("active", btn === button);
-    });
-
-    renderGallery();
-});
-
-
-// LIVE SEARCH
-searchInput.addEventListener("input", renderGallery);
-
-
-// OPEN IMAGE BY CLICKING A CARD
-grid.addEventListener("click", event => {
-
-    const card = event.target.closest(".photo-card");
-
-    if (card) {
-        openLightbox(Number(card.dataset.index));
+        default:
+            return b;
     }
-});
+}
 
+function showError() {
+    currentInput = "0";
+    storedValue = null;
+    operator = null;
+    waitingForOperand = false;
+    justCalculated = false;
+    errorState = true;
 
-// OPEN IMAGE USING KEYBOARD
-grid.addEventListener("keydown", event => {
+    expressionDisplay.textContent = "Invalid calculation";
+    resultDisplay.textContent = "Error";
+    displayLabel.textContent = "CHECK YOUR INPUT";
+}
 
-    const card = event.target.closest(".photo-card");
-
-    if (
-        card &&
-        (event.key === "Enter" || event.key === " ")
-    ) {
-        event.preventDefault();
-        openLightbox(Number(card.dataset.index));
+function updateDisplay() {
+    if (errorState) {
+        return;
     }
-});
 
+    resultDisplay.textContent = currentInput;
 
-// LIGHTBOX BUTTONS
-document.getElementById("prevBtn").addEventListener("click", () => {
-    moveLightbox(-1);
-});
+    if (operator !== null && storedValue !== null) {
+        const symbol = {
+            "+": "+",
+            "-": "−",
+            "*": "×",
+            "/": "÷"
+        }[operator];
 
-document.getElementById("nextBtn").addEventListener("click", () => {
-    moveLightbox(1);
-});
+        expressionDisplay.textContent =
+            `${formatNumber(storedValue)} ${symbol}` +
+            (waitingForOperand ? "" : ` ${currentInput}`);
 
-document.getElementById("closeLightbox").addEventListener("click", closeLightbox);
+        // Show a live result when the second number is entered
+        if (!waitingForOperand) {
+            const preview = calculate(
+                storedValue,
+                Number(currentInput),
+                operator
+            );
 
-document.getElementById("backdrop").addEventListener("click", closeLightbox);
-
-
-// CLEAR SEARCH AND FILTERS
-document.getElementById("resetSearch").addEventListener("click", () => {
-
-    searchInput.value = "";
-    activeCategory = "All";
-
-    document.querySelectorAll(".filter-btn").forEach(btn => {
-        btn.classList.toggle(
-            "active",
-            btn.dataset.category === "All"
-        );
-    });
-
-    renderGallery();
-});
-
-
-// FAVORITE BUTTON
-document.getElementById("favoriteBtn").addEventListener("click", () => {
-
-    const title = visiblePhotos[currentIndex]?.title;
-
-    if (!title) return;
-
-    if (favorites.has(title)) {
-        favorites.delete(title);
+            if (preview === null || !Number.isFinite(preview)) {
+                resultDisplay.textContent =
+                    Number(currentInput) === 0 && operator === "/"
+                        ? "Cannot divide by 0"
+                        : "Error";
+            } else {
+                resultDisplay.textContent = formatNumber(preview);
+            }
+        }
     } else {
-        favorites.add(title);
+        expressionDisplay.textContent =
+            justCalculated ? "Calculation complete" : "0";
+
+        resultDisplay.textContent = currentInput;
     }
 
-    updateLightbox();
-});
+    displayLabel.textContent =
+        justCalculated ? "FINAL RESULT" : "READY TO CALCULATE";
+}
 
+function inputNumber(number) {
+    if (errorState) {
+        clearCalculator();
+    }
 
-// OPEN FULL-SIZE IMAGE IN A NEW TAB
-document.getElementById("downloadBtn").addEventListener("click", () => {
+    if (justCalculated && operator === null) {
+        currentInput = number;
+        justCalculated = false;
+        updateDisplay();
+        return;
+    }
 
-    const photo = visiblePhotos[currentIndex];
+    if (waitingForOperand) {
+        currentInput = number;
+        waitingForOperand = false;
+    } else if (currentInput === "0") {
+        currentInput = number;
+    } else if (currentInput.replace("-", "").length < 15) {
+        currentInput += number;
+    }
 
-    if (photo) {
-        window.open(
-            photo.image,
-            "_blank",
-            "noopener,noreferrer"
+    updateDisplay();
+}
+
+function inputDecimal() {
+    if (errorState) {
+        clearCalculator();
+    }
+
+    if (justCalculated && operator === null) {
+        currentInput = "0.";
+        justCalculated = false;
+    } else if (waitingForOperand) {
+        currentInput = "0.";
+        waitingForOperand = false;
+    } else if (!currentInput.includes(".")) {
+        currentInput += ".";
+    }
+
+    updateDisplay();
+}
+
+function chooseOperator(nextOperator) {
+    if (errorState) {
+        return;
+    }
+
+    const inputValue = Number(currentInput);
+
+    if (operator !== null && !waitingForOperand) {
+        const answer = calculate(
+            storedValue,
+            inputValue,
+            operator
+        );
+
+        if (answer === null || !Number.isFinite(answer)) {
+            showError();
+            return;
+        }
+
+        currentInput = String(Number(answer.toPrecision(12)));
+        storedValue = Number(currentInput);
+    } else if (storedValue === null || justCalculated) {
+        storedValue = inputValue;
+    }
+
+    operator = nextOperator;
+    waitingForOperand = true;
+    justCalculated = false;
+
+    updateDisplay();
+}
+
+function calculateResult() {
+    if (errorState || operator === null || storedValue === null) {
+        return;
+    }
+
+    const firstValue = storedValue;
+    const secondValue = waitingForOperand
+        ? storedValue
+        : Number(currentInput);
+
+    const activeOperator = operator;
+    const answer = calculate(
+        firstValue,
+        secondValue,
+        activeOperator
+    );
+
+    if (answer === null || !Number.isFinite(answer)) {
+        showError();
+        return;
+    }
+
+    const symbol = {
+        "+": "+",
+        "-": "−",
+        "*": "×",
+        "/": "÷"
+    }[activeOperator];
+
+    expressionDisplay.textContent =
+        `${formatNumber(firstValue)} ${symbol} ` +
+        `${formatNumber(secondValue)} =`;
+
+    currentInput = String(Number(answer.toPrecision(12)));
+    resultDisplay.textContent = formatNumber(answer);
+    displayLabel.textContent = "FINAL RESULT";
+
+    storedValue = null;
+    operator = null;
+    waitingForOperand = false;
+    justCalculated = true;
+}
+
+function clearCalculator() {
+    currentInput = "0";
+    storedValue = null;
+    operator = null;
+    waitingForOperand = false;
+    justCalculated = false;
+    errorState = false;
+
+    expressionDisplay.textContent = "0";
+    resultDisplay.textContent = "0";
+    displayLabel.textContent = "READY TO CALCULATE";
+}
+
+function deleteLastDigit() {
+    if (errorState || justCalculated) {
+        clearCalculator();
+        return;
+    }
+
+    if (waitingForOperand) {
+        return;
+    }
+
+    if (currentInput.length > 1) {
+        currentInput = currentInput.slice(0, -1);
+
+        if (currentInput === "-") {
+            currentInput = "0";
+        }
+    } else {
+        currentInput = "0";
+    }
+
+    updateDisplay();
+}
+
+function calculatePercentage() {
+    if (errorState) {
+        return;
+    }
+
+    const value = Number(currentInput);
+
+    // With a pending operator, calculate the percentage
+    // of the first number. Example: 200 + 10% = 220.
+    if (operator !== null && storedValue !== null) {
+        currentInput = String(
+            Number((storedValue * value / 100).toPrecision(12))
+        );
+    } else {
+        currentInput = String(
+            Number((value / 100).toPrecision(12))
         );
     }
+
+    waitingForOperand = false;
+    justCalculated = false;
+
+    updateDisplay();
+}
+
+
+// HANDLE BUTTON CLICKS
+keypad.addEventListener("click", function(event) {
+    const button = event.target.closest("button");
+
+    if (!button) {
+        return;
+    }
+
+    if (button.dataset.number !== undefined) {
+        inputNumber(button.dataset.number);
+        return;
+    }
+
+    if (button.dataset.operator) {
+        chooseOperator(button.dataset.operator);
+        return;
+    }
+
+    switch (button.dataset.action) {
+        case "clear":
+            clearCalculator();
+            break;
+
+        case "delete":
+            deleteLastDigit();
+            break;
+
+        case "decimal":
+            inputDecimal();
+            break;
+
+        case "percent":
+            calculatePercentage();
+            break;
+
+        case "calculate":
+            calculateResult();
+            break;
+    }
 });
 
 
-// DARK / LIGHT THEME
-document.getElementById("themeToggle").addEventListener("click", () => {
+// KEYBOARD SUPPORT
+document.addEventListener("keydown", function(event) {
+    const key = event.key;
 
-    document.body.classList.toggle("light");
+    if (/^[0-9]$/.test(key)) {
+        inputNumber(key);
+        return;
+    }
 
-    const isLight =
-        document.body.classList.contains("light");
+    if (key === ".") {
+        inputDecimal();
+        return;
+    }
 
-    const button = document.getElementById("themeToggle");
+    if (["+", "-", "*", "/"].includes(key)) {
+        chooseOperator(key);
+        return;
+    }
 
-    button.textContent = isLight ? "☾" : "☼";
+    if (key === "Enter" || key === "=") {
+        event.preventDefault();
+        calculateResult();
+        return;
+    }
 
-    button.setAttribute(
-        "aria-label",
-        isLight ? "Switch to dark theme" : "Switch to light theme"
-    );
+    if (key === "Backspace") {
+        deleteLastDigit();
+        return;
+    }
+
+    if (key === "Escape") {
+        clearCalculator();
+        return;
+    }
+
+    if (key === "%") {
+        calculatePercentage();
+    }
 });
 
 
-// KEYBOARD NAVIGATION
-document.addEventListener("keydown", event => {
-
-    if (!lightbox.classList.contains("open")) return;
-
-    if (event.key === "Escape") {
-        closeLightbox();
-    }
-
-    if (event.key === "ArrowLeft") {
-        moveLightbox(-1);
-    }
-
-    if (event.key === "ArrowRight") {
-        moveLightbox(1);
-    }
-});
-
-
-// CURRENT YEAR IN FOOTER
-document.getElementById("year").textContent =
-    new Date().getFullYear();
-
-
-// INITIALIZE WEBSITE
-renderGallery();
+// INITIAL DISPLAY
+updateDisplay();
