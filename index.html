@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhotoGallery | Beautiful Moments</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header class="topbar">
+        <a class="brand" href="#home">
+            <span class="brand-icon">✦</span>
+            <span>Photo<span class="gradient-text">Gallery</span></span>
+        </a>
+
+        <nav class="nav-links">
+            <a href="#home">Home</a>
+            <a class="active" href="#gallery">Gallery</a>
+            <a href="#about">About</a>
+        </nav>
+
+        <label class="search-box">
+            <input
+                id="searchInput"
+                type="search"
+                placeholder="Search images..."
+                aria-label="Search images"
+            >
+            <span>⌕</span>
+        </label>
+
+        <button class="theme-toggle" id="themeToggle"
+                aria-label="Toggle theme">☼</button>
+    </header>
+
+    <main id="home">
+
+        <section class="hero">
+            <p class="eyebrow">
+                <span></span> A LITTLE INSPIRATION, EVERY DAY
+            </p>
+
+            <h1>
+                Beautiful <span class="gradient-text">Moments.</span>
+            </h1>
+
+            <p class="hero-copy">
+                Explore a collection of stunning images from around the world.
+                <br class="desktop-break">
+                Find a little beauty in every frame.
+            </p>
+        </section>
+
+        <section class="gallery-section" id="gallery">
+
+            <div class="gallery-toolbar">
+
+                <div class="filters" id="filters">
+                    <button class="filter-btn active"
+                            data-category="All">All</button>
+
+                    <button class="filter-btn"
+                            data-category="Nature">Nature</button>
+
+                    <button class="filter-btn"
+                            data-category="Cities">Cities</button>
+
+                    <button class="filter-btn"
+                            data-category="Animals">Animals</button>
+
+                    <button class="filter-btn"
+                            data-category="Technology">Technology</button>
+
+                    <button class="filter-btn"
+                            data-category="People">People</button>
+                </div>
+
+                <div class="view-label">
+                    <span class="live-dot"></span>
+                    <span id="resultCount">08 photos</span>
+                </div>
+
+            </div>
+
+            <div class="gallery-grid" id="galleryGrid"></div>
+
+            <div class="empty-state" id="emptyState" hidden>
+                <span>⌕</span>
+                <h2>No photos found</h2>
+                <p>Try another search or category.</p>
+                <button id="resetSearch" class="reset-btn">
+                    Clear filters
+                </button>
+            </div>
+
+        </section>
+
+        <section class="about" id="about">
+            <div>
+                <p class="eyebrow">THE WORLD, IN FRAMES</p>
+
+                <h2>
+                    Collect moments.<br>
+                    <span class="gradient-text">Keep the feeling.</span>
+                </h2>
+            </div>
+
+            <p>
+                From quiet landscapes to electric city nights,
+                explore a curated visual collection.
+                Select any photo to see it in a larger view.
+            </p>
+        </section>
+
+    </main>
+
+    <footer>
+        <a class="brand footer-brand" href="#home">
+            <span class="brand-icon">✦</span>
+            <span>Photo<span class="gradient-text">Gallery</span></span>
+        </a>
+
+        <span>Made for the love of beautiful images.</span>
+
+        <span>© <span id="year"></span> PhotoGallery</span>
+    </footer>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox"
+         role="dialog" aria-modal="true"
+         aria-label="Image viewer" aria-hidden="true">
+
+        <button class="lightbox-backdrop" id="backdrop"
+                aria-label="Close image viewer"></button>
+
+        <div class="lightbox-panel">
+
+            <div class="lightbox-top">
+                <div class="lightbox-meta">
+                    <span class="category-dot"></span>
+                    <span id="lightboxCategory">Nature</span>
+                    <span class="meta-separator">/</span>
+                    <span id="lightboxCounter">01 / 08</span>
+                </div>
+
+                <button class="icon-btn close-btn" id="closeLightbox"
+                        aria-label="Close viewer">✕</button>
+            </div>
+
+            <div class="lightbox-image-wrap">
+                <img id="lightboxImage" src="" alt="">
+
+                <button class="image-arrow prev" id="prevBtn"
+                        aria-label="Previous image">‹</button>
+
+                <button class="image-arrow next" id="nextBtn"
+                        aria-label="Next image">›</button>
+            </div>
+
+            <div class="lightbox-bottom">
+                <div>
+                    <h2 id="lightboxTitle"></h2>
+                    <p id="lightboxDescription"></p>
+                </div>
+
+                <div class="lightbox-actions">
+                    <button class="icon-btn" id="downloadBtn"
+                            aria-label="Open full image" title="Open full image">
+                        ↗
+                    </button>
+
+                    <button class="icon-btn favorite-btn" id="favoriteBtn"
+                            aria-label="Favorite image" title="Favorite">
+                        ♡
+                    </button>
+                </div>
+            </div>
+
+            <div class="keyboard-hint">
+                <span>←</span> <span>→</span> to navigate
+                <span class="hint-divider">·</span>
+                <span>ESC</span> to close
+            </div>
+
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
